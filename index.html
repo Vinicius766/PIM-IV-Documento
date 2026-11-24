@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Nutri-O Delivery: marmitas saudáveis, práticas e personalizadas, com informação nutricional completa.">
+<title>Início | Nutri-O Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   Nutri-O Delivery - site
+   [ETAPA 4] Web: consome a NutriO.API (cardápio e pedido)
+   [ETAPA 3] Inclusão: contraste mínimo 4,5:1, navegação por teclado, leitor de tela,
+             VLibras, "reduzir movimento", declaração de acessibilidade e aviso de privacidade (LGPD)
+   ===================================================================== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --verde:#2d6a4f;--verde-claro:#52b788;
+  /* [ETAPA 3] coral escurecido: o anterior (#ef6f4c) tinha 2,98:1 sobre branco; este tem 5,18:1 */
+  --coral:#c2410c;--coral-hover:#a7331a;
+  --fundo:#f7faf8;--texto:#1f2a24;--muted:#647067;--borda:#dde8df;--branco:#fff;--foco:#1d4ed8
+}
+html{scroll-padding-top:90px}
+body{font-family:'Poppins',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;background:var(--fundo);color:var(--texto);overflow-x:hidden;line-height:1.5}
+a{color:var(--verde)}
+/* [ETAPA 3] foco sempre visível para quem navega pelo teclado */
+:focus-visible{outline:3px solid var(--foco);outline-offset:3px;border-radius:4px}
+.skip-link{position:absolute;left:12px;top:-60px;background:var(--verde);color:#fff;padding:10px 16px;border-radius:8px;z-index:3000;font-weight:600;text-decoration:none}
+.skip-link:focus{top:10px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+header{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px 6%;background:rgba(255,255,255,.97);box-shadow:0 8px 22px rgba(31,42,36,.08);position:sticky;top:0;z-index:1000}
+.logo{font-size:22px;font-weight:700;color:var(--verde);text-decoration:none}.logo span{color:var(--coral)}
+nav ul{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;list-style:none}
+nav a{display:block;text-decoration:none;color:var(--texto);font-weight:500;padding:9px 12px;border-radius:8px;transition:background .2s}
+nav a:hover,nav a.active{background:#eaf6ef;color:var(--verde)}
+nav a.active{font-weight:700}
+
+.page{min-height:calc(100vh - 70px);padding:38px 6%;display:none}
+.page.active{display:block;animation:subir .32s ease both}
+@keyframes subir{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* [ETAPA 3] respeita a preferência "reduzir movimento" do sistema */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.hero{min-height:470px;display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,.92fr);gap:32px;align-items:center}
+.hero-texto{max-width:720px}
+.hero-texto small{display:inline-flex;margin-bottom:16px;color:var(--verde);font-weight:700;text-transform:uppercase;font-size:12px;letter-spacing:.08em}
+.hero h1{font-size:clamp(34px,6vw,62px);line-height:1.05;margin-bottom:18px}
+.hero p{font-size:18px;line-height:1.7;color:var(--muted);max-width:610px;margin-bottom:24px}
+.hero-acoes{display:flex;gap:12px;flex-wrap:wrap}
+.hero-foto{min-height:430px;border-radius:8px;background:linear-gradient(180deg,rgba(31,42,36,.08),rgba(31,42,36,.2)),url('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=85') center/cover;box-shadow:0 18px 45px rgba(31,42,36,.18)}
+.beneficios{margin-top:26px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;list-style:none}
+.beneficio-card{background:var(--branco);padding:22px;border:1px solid var(--borda);border-radius:8px}
+.icone{font-size:30px;margin-bottom:10px}
+.beneficio-card h3{font-size:17px;margin-bottom:8px}
+.beneficio-card p{color:var(--muted);line-height:1.55}
+
+/* ---- animações da página inicial (desligadas por "reduzir movimento", regra acima) ---- */
+.hero-texto>*{animation:entrar .7s cubic-bezier(.2,.7,.2,1) both}
+.hero-texto>small{animation-delay:.05s}
+.hero-texto>h1{animation-delay:.15s}
+.hero-texto>p{animation-delay:.3s}
+.hero-texto>.hero-acoes{animation-delay:.45s}
+@keyframes entrar{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.destaque{background:linear-gradient(90deg,var(--verde),#1b4332,var(--coral),var(--verde));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:brilho 8s linear infinite}
+@keyframes brilho{to{background-position:300% 0}}
+.hero-foto{position:relative;animation:entrar-foto .9s .2s cubic-bezier(.2,.7,.2,1) both,flutuar 6s 1.1s ease-in-out infinite}
+@keyframes entrar-foto{from{opacity:0;transform:scale(.92) rotate(-2deg)}to{opacity:1;transform:none}}
+@keyframes flutuar{50%{transform:translateY(-10px)}}
+.flutuante{position:absolute;font-size:34px;background:#fff;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;box-shadow:0 10px 24px rgba(31,42,36,.18);animation:boia 4s ease-in-out infinite}
+.flutuante.f1{top:-18px;left:-18px}
+.flutuante.f2{top:38%;right:-22px;animation-delay:-1.3s}
+.flutuante.f3{bottom:-18px;left:22%;animation-delay:-2.6s}
+@keyframes boia{50%{transform:translateY(-12px) rotate(8deg)}}
+.beneficio-card{transition:transform .25s,box-shadow .25s,border-color .25s;animation:entrar .7s cubic-bezier(.2,.7,.2,1) both}
+.beneficio-card:nth-child(1){animation-delay:.6s}
+.beneficio-card:nth-child(2){animation-delay:.75s}
+.beneficio-card:nth-child(3){animation-delay:.9s}
+.beneficio-card:hover{transform:translateY(-6px);box-shadow:0 16px 32px rgba(31,42,36,.12);border-color:var(--verde-claro)}
+.beneficio-card .icone{display:inline-block;transition:transform .3s}
+.beneficio-card:hover .icone{transform:scale(1.25) rotate(-8deg)}
+.btn{transition:background .2s,transform .2s,box-shadow .2s}
+.btn:not([disabled]):hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(45,106,79,.25)}
+.logo span{display:inline-block;transition:transform .5s}
+.logo:hover span{transform:rotate(360deg)}
+@media(max-width:860px){.flutuante{width:50px;height:50px;font-size:26px}.flutuante.f1{left:8px}.flutuante.f2{right:8px}}
+
+.container{max-width:1180px;margin:0 auto}
+.topo-secao{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:22px}
+.titulo{font-size:clamp(28px,4vw,42px);line-height:1.1}
+.subtitulo{color:var(--muted);line-height:1.6;margin-top:8px;max-width:650px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:22px;list-style:none}
+.card{background:var(--branco);border:1px solid var(--borda);border-radius:8px;overflow:hidden;box-shadow:0 12px 30px rgba(31,42,36,.08);display:flex;flex-direction:column}
+.card img{width:100%;height:190px;object-fit:cover;background:#e6f2ea}
+.card-content{padding:18px;display:flex;flex-direction:column;flex:1}
+.card-content h3{font-size:20px;margin-bottom:8px}
+.card-content p{color:var(--muted);margin-bottom:12px;line-height:1.55}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 8px;list-style:none}
+.tag{padding:6px 9px;background:#eef8f2;border-radius:8px;color:var(--verde);font-size:12px;font-weight:700}
+.estoque{font-size:13px;color:var(--muted)}
+.preco{font-weight:700;color:var(--coral);margin:10px 0 14px;font-size:21px}
+.card-content .btn{margin-top:auto;width:100%}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:12px 18px;background:var(--verde);color:#fff;text-decoration:none;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700}
+.btn:hover{background:#245942}
+.btn.secundario{background:var(--coral)}.btn.secundario:hover{background:var(--coral-hover)}
+.btn.neutro{background:#eff5f1;color:var(--verde)}.btn.neutro:hover{background:#dfeee4}
+.btn[disabled]{background:#6b756e;color:#fff;cursor:not-allowed}
+
+.api-status{margin:0 0 20px;padding:13px 16px;border-radius:8px;background:#fff6d8;color:#6b5100;border:1px solid #f4df93}
+.api-status:empty{display:none}
+.api-status.sucesso{background:#e4f7eb;color:#145a34;border-color:#b9e5c8}
+.api-status.erro{background:#fff0ed;color:#8b2c1d;border-color:#f4beb1}
+
+/* ---- modal de pedido ---- */
+.pedido-modal{position:fixed;inset:0;background:rgba(14,25,19,.68);display:none;align-items:center;justify-content:center;padding:16px;z-index:2000}
+.pedido-modal.active{display:flex}
+.pedido-box{background:var(--branco);width:min(600px,100%);max-height:94vh;overflow:auto;border-radius:8px;padding:24px;box-shadow:0 18px 55px rgba(0,0,0,.28)}
+.pedido-box h2{color:var(--verde);font-size:22px;margin-bottom:4px}
+.pedido-box p{color:var(--muted);line-height:1.55}
+.pedido-box fieldset{border:0;margin-top:14px}
+.pedido-box legend{font-weight:700;color:var(--texto);margin-bottom:2px}
+.pedido-box label{display:block;margin-top:12px;font-weight:500}
+.pedido-box .dica{font-size:13px;color:var(--muted);font-weight:400}
+.pedido-box input,.pedido-box select,.pedido-box textarea{width:100%;margin-top:6px;padding:12px;border:1px solid #8a968e;border-radius:8px;font-family:inherit;font-size:16px;background:#fff;color:var(--texto)}
+.pedido-box textarea{min-height:70px;resize:vertical}
+.pedido-box [aria-invalid="true"]{border-color:#b3261e;border-width:2px}
+.linha-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.linha-3{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.consentimento{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-weight:400}
+.consentimento input{width:22px;height:22px;margin-top:2px;flex:none}
+.pedido-erro{margin-top:14px;padding:12px 14px;border-radius:8px;background:#fff0ed;color:#8b2c1d;border:1px solid #f4beb1;font-weight:500}
+.pedido-erro:empty{display:none}
+.pedido-acoes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.resumo-pedido{margin-top:12px;padding:12px 14px;background:#f3faf6;border:1px solid var(--borda);border-radius:8px}
+
+/* ---- páginas de texto ---- */
+.card-page{background:var(--branco);max-width:920px;margin:auto;padding:34px;border-radius:8px;border:1px solid var(--borda);box-shadow:0 12px 30px rgba(31,42,36,.08)}
+.card-page h1{margin-bottom:18px;color:var(--verde);font-size:clamp(26px,4vw,36px);line-height:1.15}
+.card-page h2{margin:26px 0 10px;color:var(--verde);font-size:22px}
+.card-page p{margin-bottom:15px;line-height:1.75;color:#4a564e}
+.card-page ul.simples{margin:0 0 15px 22px;line-height:1.75;color:#4a564e}
+.lista-valores{display:grid;gap:12px;margin:20px 0;list-style:none}
+.lista-valores li{padding:14px;border-radius:8px;background:#f3faf6;border:1px solid var(--borda);line-height:1.6;color:#33403a}
+.lista-valores strong{color:var(--texto)}
+.ilustracao{display:block;margin:6px auto 22px;max-width:520px;width:100%;height:auto}
+.aviso-modelo{font-size:14px;background:#fff6d8;border:1px solid #f4df93;color:#6b5100;padding:10px 14px;border-radius:8px}
+
+footer{background:#17241d;color:#eef7f1;text-align:center;padding:22px 6%;margin-top:20px;line-height:1.8}
+footer a{color:#bfe8d0}
+
+@media(max-width:860px){header{align-items:flex-start;flex-direction:column}nav ul{justify-content:flex-start}.hero{grid-template-columns:1fr}.hero-foto{min-height:300px}.beneficios{grid-template-columns:1fr}.topo-secao{align-items:flex-start;flex-direction:column}}
+@media(max-width:520px){header,.page{padding-left:4%;padding-right:4%}.hero{min-height:auto}.pedido-acoes,.linha-2,.linha-3{grid-template-columns:1fr}.card-page{padding:22px}.btn{width:100%}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Ir para o conteúdo principal</a>
+
+<header>
+  <a class="logo" href="#inicio" aria-label="Nutri-O Delivery, página inicial">Nutri-<span>O</span> Delivery</a>
+  <nav aria-label="Principal">
+    <ul>
+      <li><a href="#inicio">Início</a></li>
+      <li><a href="#marmitas">Marmitas</a></li>
+      <li><a href="#sobre">Sobre</a></li>
+      <li><a href="#social">Responsabilidade social</a></li>
+      <li><a href="#contato">Contato</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="conteudo" tabindex="-1">
+
+<!-- ======================= INÍCIO ======================= -->
+<section id="inicio" class="page active" aria-labelledby="h-inicio">
+  <div class="hero container">
+    <div class="hero-texto">
+      <small>Delivery saudável</small>
+      <h1 id="h-inicio">Alimentação <span class="destaque">saudável e saborosa</span> direto na sua casa</h1>
+      <p>Marmitas práticas, equilibradas e com informação nutricional completa, para quem tem pouco tempo e não abre mão de comer bem.</p>
+      <div class="hero-acoes">
+        <a class="btn" href="#marmitas">Ver marmitas</a>
+        <a class="btn neutro" href="#sobre">Conhecer a Nutri-O</a>
+      </div>
+    </div>
+    <div class="hero-foto" role="img" aria-label="Marmita colorida com legumes, grãos e proteína">
+      <span class="flutuante f1" aria-hidden="true">🥑</span>
+      <span class="flutuante f2" aria-hidden="true">🍅</span>
+      <span class="flutuante f3" aria-hidden="true">🥦</span>
+    </div>
+  </div>
+  <ul class="beneficios container">
+    <li class="beneficio-card"><div class="icone" aria-hidden="true">🥗</div><h3>Ingredientes frescos</h3><p>Refeições preparadas diariamente com ingredientes selecionados.</p></li>
+    <li class="beneficio-card"><div class="icone" aria-hidden="true">🚚</div><h3>Entrega rápida</h3><p>Sua marmita quentinha chega em toda a cidade.</p></li>
+    <li class="beneficio-card"><div class="icone" aria-hidden="true">💪</div><h3>Alimentação saudável</h3><p>Opções fitness, low carb e balanceadas para o seu dia a dia.</p></li>
+  </ul>
+</section>
+
+<!-- ======================= MARMITAS ======================= -->
+<section id="marmitas" class="page" aria-labelledby="h-marmitas" hidden>
+  <div class="container">
+    <div class="topo-secao">
+      <div>
+        <h1 class="titulo" id="h-marmitas">Nossas marmitas</h1>
+        <p class="subtitulo">Cardápio atualizado em tempo real. Cada prato mostra calorias, proteínas, carboidratos e gorduras.</p>
+      </div>
+      <button type="button" class="btn neutro" id="btn-atualizar">Atualizar cardápio</button>
+    </div>
+    <div id="api-status" class="api-status" role="status" aria-live="polite"></div>
+    <ul id="grade-produtos" class="grid" aria-busy="false"></ul>
+  </div>
+</section>
+
+<!-- ======================= SOBRE ======================= -->
+<section id="sobre" class="page" aria-labelledby="h-sobre" hidden>
+  <div class="card-page">
+    <h1 id="h-sobre">Sobre a Nutri-O Delivery</h1>
+    <p>A Nutri-O Delivery é uma empresa fictícia criada para o Projeto Integrado Multidisciplinar (PIM), com foco em delivery local de marmitas saudáveis, práticas e personalizadas.</p>
+    <p>O público-alvo inclui jovens profissionais, estudantes e praticantes de atividades físicas que buscam alimentação equilibrada sem perder tempo planejando compras e preparo das refeições.</p>
+    <ul class="lista-valores">
+      <li><strong>Conveniência:</strong> pedidos digitais reduzem retrabalho e tornam o atendimento mais rápido.</li>
+      <li><strong>Qualidade nutricional:</strong> produtos com controle de calorias e macronutrientes.</li>
+      <li><strong>Organização:</strong> integração entre site, aplicativo, API e painel administrativo.</li>
+    </ul>
+    <p>Hoje o sistema reúne o site, um aplicativo móvel para clientes cadastrados e um painel administrativo, todos conectados à mesma API.</p>
+    <p>Saiba mais sobre nosso compromisso com a <a href="#social">responsabilidade social e inclusão</a>.</p>
+  </div>
+</section>
+
+<!-- ======================= RESPONSABILIDADE SOCIAL (ETAPA 3) ======================= -->
+<section id="social" class="page" aria-labelledby="h-social" hidden>
+  <div class="card-page">
+    <h1 id="h-social">Responsabilidade social e inclusão</h1>
+
+    <svg class="ilustracao" viewBox="0 0 520 190" role="img" aria-labelledby="svg-t svg-d">
+      <title id="svg-t">Pessoas diversas em volta de uma mesa</title>
+      <desc id="svg-d">Ilustração simples de cinco pessoas de tons de pele e estilos diferentes sentadas ao redor de uma mesa com pratos.</desc>
+      <rect width="520" height="190" rx="12" fill="#f3faf6"/>
+      <ellipse cx="260" cy="128" rx="170" ry="26" fill="#d9eadf"/>
+      <circle cx="238" cy="124" r="9" fill="#fff" stroke="#2d6a4f" stroke-width="2"/>
+      <circle cx="282" cy="124" r="9" fill="#fff" stroke="#2d6a4f" stroke-width="2"/>
+      <g stroke="none">
+        <circle cx="92" cy="86" r="22" fill="#8d5524"/><rect x="68" y="108" width="48" height="34" rx="14" fill="#52b788"/>
+        <circle cx="176" cy="72" r="22" fill="#f1c27d"/><rect x="152" y="94" width="48" height="34" rx="14" fill="#2d6a4f"/>
+        <circle cx="260" cy="64" r="22" fill="#c68642"/><rect x="236" y="86" width="48" height="30" rx="14" fill="#c2410c"/>
+        <circle cx="344" cy="72" r="22" fill="#5c3a1e"/><rect x="320" y="94" width="48" height="34" rx="14" fill="#f2c94c"/>
+        <circle cx="428" cy="86" r="22" fill="#e0ac69"/><rect x="404" y="108" width="48" height="34" rx="14" fill="#74c69d"/>
+      </g>
+    </svg>
+
+    <p>A Nutri-O Delivery entende que tecnologia e alimentação saudável devem ser acessíveis a <strong>todas as pessoas</strong>, sem distinção. Nossas ações são decisões concretas do sistema, descritas a seguir.</p>
+
+    <h2>Combate à discriminação</h2>
+    <ul class="lista-valores">
+      <li><strong>Cardápio e preços iguais para todos.</strong> O sistema não diferencia clientes por raça ou cor, gênero, orientação sexual, religião, condição socioeconômica ou deficiência.</li>
+      <li><strong>Coleta mínima de dados.</strong> Não pedimos nem armazenamos raça/cor, religião ou orientação sexual. As recomendações usam apenas o objetivo nutricional informado pelo cliente.</li>
+      <li><strong>Ouvidoria.</strong> Qualquer pessoa pode denunciar discriminação em um atendimento ou entrega pelo e-mail <a href="mailto:ouvidoria@nutriodelivery.example">ouvidoria@nutriodelivery.example</a>. Toda denúncia é registrada e respondida em até 5 dias úteis.</li>
+    </ul>
+
+    <h2>Valorização da diversidade</h2>
+    <ul class="lista-valores">
+      <li><strong>Sabores do Brasil.</strong> O cardápio tem uma categoria dedicada à diversidade da culinária brasileira, com pratos de forte influência da cozinha afro-brasileira, como a moqueca, em versões equilibradas.</li>
+      <li><strong>Opções para diferentes dietas.</strong> Pratos vegetarianos, low carb, fitness e leves, sempre com a tabela nutricional visível.</li>
+    </ul>
+
+    <h2 id="acessibilidade">Declaração de acessibilidade</h2>
+    <ul class="lista-valores">
+      <li><strong>Libras:</strong> este site oferece tradução para a Língua Brasileira de Sinais por meio do <strong>VLibras</strong>, ferramenta gratuita do Governo Federal (botão no canto da tela).</li>
+      <li><strong>Pessoas surdas:</strong> cadastro, pedido e acompanhamento funcionam sem áudio ou ligação telefônica.</li>
+      <li><strong>Teclado e leitores de tela:</strong> toda a navegação funciona só com o teclado (use <kbd>Tab</kbd>), há link para pular ao conteúdo, foco visível, rótulos nos formulários e mensagens anunciadas por leitores de tela. O aplicativo móvel traz rótulos para TalkBack e VoiceOver.</li>
+      <li><strong>Leitura confortável:</strong> contraste mínimo de 4,5:1 nos textos, fontes que respeitam o zoom do navegador e animações desativadas para quem pediu "reduzir movimento" no sistema.</li>
+      <li><strong>Encontrou uma barreira?</strong> Conte para a gente em <a href="mailto:ouvidoria@nutriodelivery.example">ouvidoria@nutriodelivery.example</a>.</li>
+    </ul>
+
+    <h2>Transparência e alimentação acessível</h2>
+    <p>Todos os produtos exibem calorias, proteínas, carboidratos e gorduras, porque o consumidor tem o direito de saber o que está comendo. Trabalhamos para que refeições balanceadas façam parte da rotina de quem tem pouco tempo, sem abrir mão de qualidade e de informação.</p>
+
+    <h2>Base legal que orienta estas ações</h2>
+    <ul class="simples">
+      <li>Constituição Federal, art. 5º, incisos XLI e XLII (discriminação e racismo);</li>
+      <li>Lei nº 7.716/1989 (crimes resultantes de preconceito de raça ou de cor);</li>
+      <li>Lei nº 10.639/2003 (história e cultura afro-brasileira) e Lei nº 12.288/2010 (Estatuto da Igualdade Racial);</li>
+      <li>Lei nº 10.436/2002 (Libras) e Lei nº 13.146/2015 (Estatuto da Pessoa com Deficiência);</li>
+      <li>Lei nº 13.709/2018 (LGPD).</li>
+    </ul>
+    <p>Nosso compromisso: um delivery que respeita as pessoas, o tempo delas e a saúde delas, em que a tecnologia seja uma ponte, e não uma barreira, entre o cliente e uma alimentação melhor.</p>
+  </div>
+</section>
+
+<!-- ======================= CONTATO ======================= -->
+<section id="contato" class="page" aria-labelledby="h-contato" hidden>
+  <div class="card-page">
+    <h1 id="h-contato">Contato</h1>
+    <p>Empresa fictícia do projeto acadêmico; os dados abaixo são ilustrativos.</p>
+    <ul class="lista-valores">
+      <li><strong>E-mail:</strong> <a href="mailto:contato@nutriodelivery.example">contato@nutriodelivery.example</a></li>
+      <li><strong>Telefone / WhatsApp:</strong> (17) 99999-9999</li>
+      <li><strong>Atendimento:</strong> todos os dias, das 10h às 22h</li>
+      <li><strong>Ouvidoria e acessibilidade:</strong> <a href="mailto:ouvidoria@nutriodelivery.example">ouvidoria@nutriodelivery.example</a></li>
+    </ul>
+    <p><a class="btn" href="#marmitas">Fazer um pedido</a></p>
+  </div>
+</section>
+
+<!-- ======================= PRIVACIDADE (LGPD) ======================= -->
+<section id="privacidade" class="page" aria-labelledby="h-privacidade" hidden>
+  <div class="card-page">
+    <h1 id="h-privacidade">Aviso de Privacidade</h1>
+    <p class="aviso-modelo">Texto-modelo elaborado para o projeto acadêmico, com base na Lei Geral de Proteção de Dados (Lei nº 13.709/2018). Em uma operação real, deve ser revisado por profissional jurídico.</p>
+
+    <h2>Quais dados coletamos</h2>
+    <ul class="simples">
+      <li><strong>No pedido pelo site:</strong> nome, CPF, telefone, e-mail (opcional), endereço de entrega e observações do pedido.</li>
+      <li><strong>No cadastro pelo aplicativo:</strong> os dados acima, data de nascimento (para confirmar a maioridade, 18 anos ou mais), objetivo nutricional (opcional) e senha.</li>
+    </ul>
+
+    <h2>Para que usamos</h2>
+    <ul class="simples">
+      <li>Receber, preparar e entregar o pedido e falar com você sobre ele (execução do contrato);</li>
+      <li>Identificar o cliente e evitar fraudes (CPF);</li>
+      <li>Sugerir pratos de acordo com o objetivo nutricional que você informou (consentimento, que você pode retirar);</li>
+      <li>Cumprir obrigações legais.</li>
+    </ul>
+
+    <h2>Com quem compartilhamos</h2>
+    <p>Os dados ficam em provedores de infraestrutura que atuam como operadores: banco de dados (Supabase), hospedagem da API (Railway) e do site (Vercel). Não vendemos dados.</p>
+
+    <h2>Como protegemos</h2>
+    <p>Conexão criptografada (HTTPS), senhas armazenadas apenas em forma de hash (nunca em texto), acesso ao banco restrito ao servidor da aplicação e limite de tentativas contra uso abusivo.</p>
+
+    <h2>Por quanto tempo guardamos</h2>
+    <p>Pelo tempo necessário para atender o pedido e cumprir obrigações legais. Depois disso, os dados são excluídos ou anonimizados.</p>
+
+    <h2>Seus direitos (art. 18 da LGPD)</h2>
+    <p>Você pode pedir confirmação de tratamento, acesso, correção, anonimização, portabilidade, informação sobre compartilhamento, eliminação dos dados tratados com consentimento e a revogação do consentimento. Escreva para <a href="mailto:ouvidoria@nutriodelivery.example">ouvidoria@nutriodelivery.example</a>.</p>
+
+    <h2>Menores de idade</h2>
+    <p>O cadastro no aplicativo é permitido somente para maiores de 18 anos.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ======================= MODAL DE PEDIDO ======================= -->
+<div id="pedido-modal" class="pedido-modal" role="dialog" aria-modal="true" aria-labelledby="pedido-titulo" aria-describedby="pedido-desc">
+  <div class="pedido-box">
+    <h2 id="pedido-titulo">Fazer pedido</h2>
+    <p id="pedido-desc">Confira o item e preencha os dados para entrega. Campos com * são obrigatórios.</p>
+    <div class="resumo-pedido" id="resumo-pedido" aria-live="polite"></div>
+
+    <form id="form-pedido" novalidate>
+      <fieldset>
+        <legend>Seus dados</legend>
+        <label for="p-nome">Nome completo *
+          <input id="p-nome" name="nome" type="text" autocomplete="name" maxlength="100" required>
+        </label>
+        <div class="linha-2">
+          <label for="p-cpf">CPF *
+            <input id="p-cpf" name="cpf" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00" required aria-describedby="d-cpf">
+            <span class="dica" id="d-cpf">Usado para identificar o pedido.</span>
+          </label>
+          <label for="p-telefone">Telefone com DDD *
+            <input id="p-telefone" name="telefone" type="tel" inputmode="tel" autocomplete="tel" maxlength="15" placeholder="(17) 99999-9999" required>
+          </label>
+        </div>
+        <label for="p-email">E-mail (opcional)
+          <input id="p-email" name="email" type="email" autocomplete="email" maxlength="100">
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Endereço de entrega</legend>
+        <div class="linha-2">
+          <label for="p-cep">CEP *
+            <input id="p-cep" name="cep" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" required>
+          </label>
+          <label for="p-numero">Número *
+            <input id="p-numero" name="numero" type="text" autocomplete="off" maxlength="10" required>
+          </label>
+        </div>
+        <label for="p-rua">Rua *
+          <input id="p-rua" name="rua" type="text" autocomplete="address-line1" maxlength="100" required>
+        </label>
+        <div class="linha-2">
+          <label for="p-bairro">Bairro *
+            <input id="p-bairro" name="bairro" type="text" autocomplete="address-level3" maxlength="50" required>
+          </label>
+          <label for="p-complemento">Complemento
+            <input id="p-complemento" name="complemento" type="text" autocomplete="address-line2" maxlength="100">
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Pedido</legend>
+        <div class="linha-2">
+          <label for="p-quantidade">Quantidade *
+            <input id="p-quantidade" name="quantidade" type="number" min="1" max="20" value="1" inputmode="numeric" required>
+          </label>
+          <label for="p-pagamento">Forma de pagamento *
+            <select id="p-pagamento" name="pagamento" required>
+              <option value="Pix">Pix</option>
+              <option value="Cartão de crédito">Cartão de crédito</option>
+              <option value="Cartão de débito">Cartão de débito</option>
+              <option value="Dinheiro">Dinheiro</option>
+            </select>
+          </label>
+        </div>
+        <label for="p-obs">Observações (ex.: sem cebola)
+          <textarea id="p-obs" name="obs" maxlength="300"></textarea>
+        </label>
+      </fieldset>
+
+      <label class="consentimento" for="p-lgpd">
+        <input id="p-lgpd" name="lgpd" type="checkbox" required>
+        <span>Li e concordo com o <a href="#privacidade" target="_blank" rel="noopener">Aviso de Privacidade</a> (abre em nova aba). *</span>
+      </label>
+
+      <div id="pedido-erro" class="pedido-erro" role="alert"></div>
+
+      <div class="pedido-acoes">
+        <button type="button" class="btn neutro" id="btn-cancelar">Cancelar</button>
+        <button type="submit" class="btn secundario" id="btn-enviar">Enviar pedido</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <div>© Nutri-O Delivery — projeto acadêmico (PIM IV). Empresa fictícia.</div>
+  <div><a href="#privacidade">Aviso de Privacidade</a> · <a href="#acessibilidade" id="link-acess">Declaração de acessibilidade</a> · <a href="#social">Responsabilidade social</a></div>
+  <div>Foto da página inicial: Unsplash.</div>
+</footer>
+
+<!-- [ETAPA 3] VLibras: tradução para Libras (Governo Federal) -->
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js" defer></script>
+
+<script>
+/* =====================================================================
+   [ETAPA 4] Cardápio e pedido via NutriO.API
+   - Os dados da API são inseridos com textContent (nunca innerHTML): sem risco de XSS.
+   - A URL da API pode ser trocada definindo window.NUTRIO_CONFIG = { apiUrl: '...' } antes deste script.
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  var API_URL = ((window.NUTRIO_CONFIG && window.NUTRIO_CONFIG.apiUrl) || 'http://localhost:5016').replace(/\/+$/, '');
+
+  var PAGINAS = ['inicio', 'marmitas', 'sobre', 'social', 'contato', 'privacidade'];
+  var TITULOS = {
+    inicio: 'Início', marmitas: 'Marmitas', sobre: 'Sobre', social: 'Responsabilidade social',
+    contato: 'Contato', privacidade: 'Aviso de Privacidade'
+  };
+
+  // Imagem neutra (SVG embutido) para produtos sem foto
+  var PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 190"><rect width="400" height="190" fill="#e6f2ea"/>' +
+    '<circle cx="200" cy="95" r="48" fill="#fff" stroke="#52b788" stroke-width="5"/>' +
+    '<circle cx="200" cy="95" r="26" fill="#d9eadf"/></svg>');
+
+  var EXEMPLOS = [
+    { produtoId: 0, nomeProduto: 'Frango grelhado com batata-doce', descricao: 'Exemplo de como o cardápio aparece quando a API está no ar.', preco: 28.9, categoria: 'Fitness', qtdEstoque: 0, calorias: 520, proteinas: 42, carboidratos: 55, gordurasTotais: 9, imagemUrl: null },
+    { produtoId: 0, nomeProduto: 'Bowl de quinoa vegano', descricao: 'Exemplo de como o cardápio aparece quando a API está no ar.', preco: 32.5, categoria: 'Vegano', qtdEstoque: 0, calorias: 430, proteinas: 18, carboidratos: 60, gordurasTotais: 14, imagemUrl: null }
+  ];
+
+  var $ = function (sel, raiz) { return (raiz || document).querySelector(sel); };
+  var brl = function (v) { return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); };
+  var reduzMovimento = function () { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
+
+  /* ------------------------------ navegação por hash ------------------------------ */
+  var cardapioCarregado = false;
+
+  function rotaAtual() {
+    var id = (location.hash || '#inicio').slice(1);
+    return PAGINAS.indexOf(id) >= 0 ? id : (id === 'acessibilidade' ? 'social' : 'inicio');
+  }
+
+  function mostrarPagina(id, mover) {
+    document.querySelectorAll('.page').forEach(function (p) {
+      var ativa = p.id === id;
+      p.classList.toggle('active', ativa);
+      p.hidden = !ativa;
+    });
+    document.querySelectorAll('nav a').forEach(function (a) {
+      var ativa = a.getAttribute('href') === '#' + id;
+      a.classList.toggle('active', ativa);
+      if (ativa) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    document.title = TITULOS[id] + ' | Nutri-O Delivery';
+
+    if (mover) {
+      var titulo = $('#' + id + ' h1');
+      if (titulo) { titulo.setAttribute('tabindex', '-1'); titulo.focus({ preventScroll: true }); }
+      window.scrollTo({ top: 0, behavior: reduzMovimento() ? 'auto' : 'smooth' });
+    }
+    if (id === 'marmitas' && !cardapioCarregado) carregarProdutos();
+  }
+
+  window.addEventListener('hashchange', function () {
+    var h = (location.hash || '').slice(1);
+    mostrarPagina(rotaAtual(), true);
+    if (h === 'acessibilidade') {
+      var alvo = document.getElementById('acessibilidade');
+      if (alvo) alvo.scrollIntoView({ behavior: reduzMovimento() ? 'auto' : 'smooth' });
+    }
+  });
+
+  /* ------------------------------ cardápio ------------------------------ */
+  var produtos = [];
+
+  function mostrarStatus(texto, tipo) {
+    var el = $('#api-status');
+    el.textContent = texto || '';
+    el.className = 'api-status' + (tipo ? ' ' + tipo : '');
+  }
+
+  function urlSegura(url) {
+  if (typeof url !== 'string' || url.trim() === '') return null;
+  // aceita http(s) OU caminho relativo (imagens/produto_x.png)
+  return /^(https?:\/\/|imagens\/)/i.test(url) ? url : null;
+}
+
+  function criar(tag, classe, texto) {
+    var el = document.createElement(tag);
+    if (classe) el.className = classe;
+    if (texto !== undefined && texto !== null) el.textContent = texto;
+    return el;
+  }
+
+  function renderizar(lista, offline) {
+    var grade = $('#grade-produtos');
+    grade.textContent = '';
+    if (!lista.length) {
+      grade.appendChild(criar('li', '', 'Nenhum produto disponível no momento.'));
+      return;
+    }
+
+    lista.forEach(function (p) {
+      var item = criar('li');
+      var card = criar('article', 'card');
+      card.setAttribute('aria-labelledby', 'prod-' + (p.produtoId || p.nomeProduto));
+
+      var img = document.createElement('img');
+      var foto = urlSegura(p.imagemUrl);
+      img.src = foto || PLACEHOLDER;
+      img.alt = foto ? 'Foto do prato ' + p.nomeProduto : '';
+      img.loading = 'lazy';
+      img.width = 400; img.height = 190;
+      card.appendChild(img);
+
+      var conteudo = criar('div', 'card-content');
+      var h3 = criar('h3', '', p.nomeProduto);
+      h3.id = 'prod-' + (p.produtoId || p.nomeProduto);
+      conteudo.appendChild(h3);
+      conteudo.appendChild(criar('p', '', p.descricao || 'Sem descrição.'));
+
+      var meta = criar('ul', 'meta');
+      [
+        p.categoria,
+        Math.round(p.calorias) + ' kcal',
+        p.proteinas + ' g de proteína',
+        p.carboidratos + ' g de carboidratos',
+        p.gordurasTotais + ' g de gorduras'
+      ].forEach(function (t) { if (t) meta.appendChild(criar('li', 'tag', t)); });
+      conteudo.appendChild(meta);
+
+      conteudo.appendChild(criar('div', 'preco', brl(p.preco)));
+
+      var esgotado = !offline && p.qtdEstoque <= 0;
+      if (!offline) {
+        conteudo.appendChild(criar('p', 'estoque', esgotado ? 'Esgotado no momento' : p.qtdEstoque + ' unidade(s) disponível(is)'));
+      }
+
+      var botao = criar('button', 'btn', offline ? 'Indisponível' : (esgotado ? 'Esgotado' : 'Pedir'));
+      botao.type = 'button';
+      if (offline || esgotado) {
+        botao.disabled = true;
+      } else {
+        botao.setAttribute('aria-label', 'Pedir ' + p.nomeProduto);
+        botao.addEventListener('click', function () { abrirPedido(p, botao); });
+      }
+      conteudo.appendChild(botao);
+
+      card.appendChild(conteudo);
+      item.appendChild(card);
+      grade.appendChild(item);
+    });
+  }
+
+  function carregarProdutos(silencioso) {
+    var grade = $('#grade-produtos');
+    grade.setAttribute('aria-busy', 'true');
+    if (!silencioso) mostrarStatus('Carregando cardápio…', '');
+
+    var ctrl = new AbortController();
+    var limite = setTimeout(function () { ctrl.abort(); }, 15000);
+
+    return fetch(API_URL + '/produtos', { signal: ctrl.signal })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (lista) {
+        produtos = lista;
+        cardapioCarregado = true;
+        renderizar(lista, false);
+        mostrarStatus(silencioso ? '' : 'Cardápio atualizado.', silencioso ? '' : 'sucesso');
+      })
+      .catch(function () {
+        renderizar(EXEMPLOS, true);
+        mostrarStatus('Não foi possível carregar o cardápio agora. Mostramos apenas exemplos e os pedidos ficam desativados. Use "Atualizar cardápio" para tentar de novo.', 'erro');
+      })
+      .then(function () {
+        clearTimeout(limite);
+        grade.setAttribute('aria-busy', 'false');
+      });
+  }
+
+  $('#btn-atualizar').addEventListener('click', function () { carregarProdutos(false); });
+
+  /* ------------------------------ validações (iguais às da API) ------------------------------ */
+  function digitos(t) { return String(t || '').replace(/\D/g, ''); }
+
+  function cpfValido(valor) {
+    var d = digitos(valor);
+    if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+    function dv(n) {
+      var soma = 0;
+      for (var i = 0; i < n; i++) soma += Number(d[i]) * (n + 1 - i);
+      var resto = (soma * 10) % 11;
+      return resto === 10 ? 0 : resto;
+    }
+    return dv(9) === Number(d[9]) && dv(10) === Number(d[10]);
+  }
+
+  function mascara(campo, formatador) {
+    campo.addEventListener('input', function () { campo.value = formatador(digitos(campo.value)); });
+  }
+  mascara($('#p-cpf'), function (d) {
+    d = d.slice(0, 11);
+    return d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2');
+  });
+  mascara($('#p-telefone'), function (d) {
+    d = d.slice(0, 11);
+    if (d.length <= 2) return d ? '(' + d : '';
+    if (d.length <= 6) return '(' + d.slice(0, 2) + ') ' + d.slice(2);
+    if (d.length <= 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
+    return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
+  });
+  mascara($('#p-cep'), function (d) {
+    d = d.slice(0, 8);
+    return d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
+  });
+
+  /* ------------------------------ modal de pedido (acessível) ------------------------------ */
+  var modal = $('#pedido-modal');
+  var form = $('#form-pedido');
+  var produtoAtual = null;
+  var gatilho = null;
+
+  function definirInerte(valor) {
+    ['header', 'main', 'footer'].forEach(function (s) {
+      var el = $(s);
+      if (el) { if (valor) el.setAttribute('inert', ''); else el.removeAttribute('inert'); }
+    });
+  }
+
+  function focaveis() {
+    return Array.prototype.slice.call(modal.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea'))
+      .filter(function (el) { return el.offsetParent !== null; });
+  }
+
+  function abrirPedido(produto, origem) {
+    produtoAtual = produto;
+    gatilho = origem;
+    form.reset();
+    limparErro();
+    $('#resumo-pedido').textContent = '';
+    var strong = criar('strong', '', produto.nomeProduto);
+    $('#resumo-pedido').appendChild(strong);
+    $('#resumo-pedido').appendChild(document.createTextNode(' — ' + brl(produto.preco) + ' por unidade'));
+    $('#p-quantidade').max = String(Math.min(20, produto.qtdEstoque));
+    modal.classList.add('active');
+    definirInerte(true);
+    $('#p-nome').focus();
+  }
+
+  function fecharPedido() {
+    modal.classList.remove('active');
+    definirInerte(false);
+    if (gatilho && document.contains(gatilho)) gatilho.focus();
+    produtoAtual = null;
+  }
+
+  modal.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') { ev.preventDefault(); fecharPedido(); return; }
+    if (ev.key !== 'Tab') return;
+    var itens = focaveis();
+    if (!itens.length) return;
+    var primeiro = itens[0], ultimo = itens[itens.length - 1];
+    if (ev.shiftKey && document.activeElement === primeiro) { ev.preventDefault(); ultimo.focus(); }
+    else if (!ev.shiftKey && document.activeElement === ultimo) { ev.preventDefault(); primeiro.focus(); }
+  });
+  modal.addEventListener('click', function (ev) { if (ev.target === modal) fecharPedido(); });
+  $('#btn-cancelar').addEventListener('click', fecharPedido);
+
+  function limparErro() {
+    $('#pedido-erro').textContent = '';
+    form.querySelectorAll('[aria-invalid]').forEach(function (el) { el.removeAttribute('aria-invalid'); });
+  }
+
+  function erroPedido(mensagem, campo) {
+    $('#pedido-erro').textContent = mensagem;
+    if (campo) { campo.setAttribute('aria-invalid', 'true'); campo.focus(); }
+  }
+
+  function validar() {
+    var nome = $('#p-nome'), cpf = $('#p-cpf'), tel = $('#p-telefone'), email = $('#p-email'),
+        cep = $('#p-cep'), numero = $('#p-numero'), rua = $('#p-rua'), bairro = $('#p-bairro'),
+        qtd = $('#p-quantidade'), lgpd = $('#p-lgpd');
+
+    if (!nome.value.trim()) return ['Informe seu nome completo.', nome];
+    if (!cpfValido(cpf.value)) return ['CPF inválido. Confira os números.', cpf];
+    var t = digitos(tel.value);
+    if (t.length < 10 || t.length > 11) return ['Informe um telefone válido com DDD.', tel];
+    if (email.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) return ['E-mail inválido.', email];
+    if (digitos(cep.value).length !== 8) return ['CEP inválido. Informe 8 números.', cep];
+    if (!numero.value.trim()) return ['Informe o número do endereço.', numero];
+    if (!rua.value.trim()) return ['Informe a rua.', rua];
+    if (!bairro.value.trim()) return ['Informe o bairro.', bairro];
+    var q = Number(qtd.value);
+    if (!Number.isInteger(q) || q < 1 || q > 20) return ['A quantidade deve ser de 1 a 20.', qtd];
+    if (produtoAtual && q > produtoAtual.qtdEstoque) return ['Só temos ' + produtoAtual.qtdEstoque + ' unidade(s) disponível(is).', qtd];
+    if (!lgpd.checked) return ['Para enviar o pedido, aceite o Aviso de Privacidade.', lgpd];
+    return null;
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    limparErro();
+    if (!produtoAtual) return;
+
+    var problema = validar();
+    if (problema) { erroPedido(problema[0], problema[1]); return; }
+
+    var botao = $('#btn-enviar');
+    botao.disabled = true;
+    botao.textContent = 'Enviando…';
+
+    var corpo = {
+      nome: $('#p-nome').value.trim(),
+      cpf: digitos($('#p-cpf').value),
+      telefone: digitos($('#p-telefone').value),
+      email: $('#p-email').value.trim() || null,
+      formaPagamento: $('#p-pagamento').value,
+      itens: [{ produtoId: produtoAtual.produtoId, quantidade: Number($('#p-quantidade').value) }],
+      endereco: {
+        rua: $('#p-rua').value.trim(),
+        numero: $('#p-numero').value.trim(),
+        bairro: $('#p-bairro').value.trim(),
+        cep: digitos($('#p-cep').value),
+        complemento: $('#p-complemento').value.trim() || null
+      },
+      observacoes: $('#p-obs').value.trim() || null,
+      aceitouPrivacidade: $('#p-lgpd').checked
+    };
+
+    var statusHttp = 0;
+    fetch(API_URL + '/pedidos/completo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo)
+    })
+      .then(function (r) {
+        statusHttp = r.status;
+        return r.json().catch(function () { return null; });
+      })
+      .then(function (dados) {
+        if (statusHttp < 200 || statusHttp >= 300) {
+          throw new Error((dados && dados.erro) || 'Não foi possível enviar o pedido (código ' + statusHttp + ').');
+        }
+        fecharPedido();
+        mostrarStatus('Pedido nº ' + dados.pedidoId + ' recebido! Total: ' + brl(dados.total) + '. Entraremos em contato pelo telefone informado.', 'sucesso');
+        carregarProdutos(true); // atualiza o estoque exibido
+        var titulo = $('#h-marmitas');
+        if (titulo) titulo.focus();
+      })
+      .catch(function (e) {
+        var falhaDeRede = e instanceof TypeError;
+        erroPedido(falhaDeRede ? 'Falha de conexão. Verifique sua internet e tente novamente.' : e.message, null);
+      })
+      .then(function () {
+        botao.disabled = false;
+        botao.textContent = 'Enviar pedido';
+      });
+  });
+
+  /* ------------------------------ VLibras ------------------------------ */
+  window.addEventListener('load', function () {
+    try { new window.VLibras.Widget('https://vlibras.gov.br/app'); } catch (e) { /* offline: o site segue funcionando */ }
+  });
+
+  mostrarPagina(rotaAtual(), false);
+})();
+</script>
+</body>
+</html>
